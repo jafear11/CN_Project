@@ -21,8 +21,12 @@ class Network:
             self.nodes = nodes
             self.adjacency_matrix = self.generate_adjacency_matrix(nodes)
             self.graph = self.graph_from_adjacency_matrix()
+            self.backup = self.graph.copy()
             self.demands = {}
             self.time = 0
+            # For experimentation
+            self.processed_demands = {} 
+            self.experiment_id = random.randint(0, 1000) 
         
     def generate_adjacency_matrix(self, nodes):
         """
@@ -73,10 +77,11 @@ class Network:
         Draws the graph using the spring layout algorithm and displays it.
         
         """
-        pos = nx.spring_layout(self.graph)
-        nx.draw(self.graph, pos, with_labels=True)
-        labels = nx.get_edge_attributes(self.graph, 'weight')
-        nx.draw_networkx_edge_labels(self.graph, pos, edge_labels=labels)
+        plt.figure(figsize=(12, 12)) 
+        pos = nx.spring_layout(self.backup)
+        nx.draw(self.backup, pos, with_labels=True)
+        labels = nx.get_edge_attributes(self.backup, 'weight')
+        nx.draw_networkx_edge_labels(self.backup, pos, edge_labels=labels)
         plt.plot()
         return None
     
@@ -93,15 +98,17 @@ class Network:
         Returns:
             None
         """
-        for i in range(len(path) - 1):
-            u, v = path[i], path[i + 1]
-            if self.graph.has_edge(u, v):
-                self.graph[u][v]['weight'] -= cost
+        if duration != 0:
+            for i in range(len(path) - 1):
+                u, v = path[i], path[i + 1]
+                if self.graph.has_edge(u, v):
+                    self.graph[u][v]['weight'] -= cost
 
         # Tuple of duration, path, cost
         demand = (duration, path, cost)
         self.demands[self.time] = demand
-    
+        
+        
     def release_demand(self, demand, time):
         """
         Increases the weight of edges in the graph based on the cost of a given demand, since the duration
@@ -116,11 +123,14 @@ class Network:
         None
         """
         _, path, cost = demand
-        for i in range(len(path) - 1):
-            u, v = path[i], path[i + 1]
-            if self.graph.has_edge(u, v):
-                self.graph[u][v]['weight'] += cost
-        del self.demands[time]
+        if path:
+            for i in range(len(path) - 1):
+                u, v = path[i], path[i + 1]
+                if self.graph.has_edge(u, v):
+                    self.graph[u][v]['weight'] += cost
+                      
+        self.processed_demands[time] = self.demands[time]
+        del self.demands[time] 
     
     def update_network(self):
             """
@@ -132,9 +142,69 @@ class Network:
             keys_to_delete = []
             for key in list(self.demands.keys()):
                 duration, path, cost = self.demands[key]
-                self.demands[key] = (duration - 1, path, cost)
-                if duration == 1:
+                if duration >= 1:
+                    self.demands[key] = (duration - 1, path, cost)
+                else:
                     keys_to_delete.append(key)
-
             for key in keys_to_delete:
                 self.release_demand(self.demands[key], key)
+                
+    def save_experiment(self):
+        """
+        Saves the experiment results to files.
+
+        This method saves the experiment results as a plot and a CSV file.
+        The plot is saved as a PNG file in the "Results" directory with the filename
+        "experiment_{experiment_id}.png", where experiment_id is the ID of the current experiment.
+        The CSV file is saved as "experiment_{experiment_id}_demands.csv" and contains the accepted demands
+        with their corresponding time, duration, path, and cost.
+        
+        """
+        self.draw()
+        plt.savefig(f"Results/experiment_{self.experiment_id}.png")      
+        
+        # Write accepted demands to a csv file
+        with open(f"Results/experiment_{self.experiment_id}_demands.csv", "w") as f:
+            f.write("Time,Duration,Path,Cost\n")
+            for time, demand in self.processed_demands.items():
+                duration, path, cost = demand
+                f.write(f"{time},{duration},{path},{cost}\n")
+            f.close()
+        self.statistics()
+        
+        print(f"Experiment {id} saved.")
+        
+    def statistics(self):
+        costs_revenues = []
+        hops = []
+        rejected_demands = 0
+        for (_, demand) in self.processed_demands.items():
+            if demand[1] is None:
+                costs_revenues.append(1)
+                rejected_demands += 1
+            else:
+                costs_revenues.append(1/len(demand[1])) 
+                hops.append(len(demand[1]))
+
+        plt.clf()
+        plt.figure(figsize=(10.6666666666, 8)) 
+        plt.plot(costs_revenues, marker='o', color='blue')
+        plt.ylabel('Cost/Revenue')
+        plt.xlabel('Demand')
+        plt.title('Cost/Revenue for each demand')
+        plt.draw()
+        plt.savefig(f"Results/experiment_{self.experiment_id}_cost_revenue.png")
+        
+        # Write in a txt file all the relevant information
+        acceptance_ratio = (len(self.processed_demands) - rejected_demands) / len(self.processed_demands)
+        
+        with open(f"Results/experiment_{self.experiment_id}_statistics.txt", "w") as f:
+            f.write(f"""
+Total number of demands: {len(self.processed_demands)}
+Number of nodes: {self.nodes}
+Number of rejected demands: {rejected_demands}
+Acceptance ratio: {format(acceptance_ratio, '.2f')}
+Average cost/revenue: {format(np.mean(costs_revenues), '.2f')}
+Standard deviation cost/revenue: {format(np.std(costs_revenues), '.2f')}
+Average number of hops: {format(np.mean(hops), '.2f')}
+                        """)

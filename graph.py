@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt
 import networkx as nx
 import time
 from network import Network
+from tqdm import tqdm
+
 
                 
 def shortest_path_brute(G, start_node, end_node, cost):
@@ -16,24 +18,24 @@ def shortest_path_brute(G, start_node, end_node, cost):
                 total_cost = sum(weights)
                 valid_paths.append((total_cost, path))
         if not valid_paths:
-            print("Demand rejected: no capacity.")
             return None
         valid_paths.sort()
         
-        print(f"Shortest path from node {start_node} and {end_node}: {valid_paths[0][1]}")
+        """ print(f"Shortest path from node {start_node} and {end_node}: {valid_paths[0][1]}")
         print(f"Total cost: {valid_paths[0][0]}")
         print(f"Cost/Revenue: {valid_paths[0][0] / ((len(valid_paths[0][1]) - 1)*cost)}")
-        print(f"Number of hops: {len(valid_paths[0][1]) - 1}")
+        print(f"Number of hops: {len(valid_paths[0][1]) - 1}") """
         return valid_paths[0][1]
     
     except nx.NetworkXNoPath:
-        print("Demand rejected: destination unreachable.")
+        """ print("Demand rejected: destination unreachable.") """
         return None
 
 if __name__ == "__main__":
     
-    network = Network(random.randint(10, 15))
-    while True:
+    network = Network(15)
+    
+    for i in tqdm(range(10)):
         nodeA = random.randint(0,network.nodes-1)
         nodeB = random.randint(0,network.nodes-1)
         cost = random.randint(1, 5)
@@ -41,8 +43,11 @@ if __name__ == "__main__":
         if shortest_path:
             duration = random.randint(1, 5)
             network.accept_demand(duration, shortest_path, cost)
-            
+        else:
+            # For experimentation
+            network.accept_demand(0, None, cost)
         network.update_network()
-        time.sleep(1)
-        
+
+    network.save_experiment()
+
 
