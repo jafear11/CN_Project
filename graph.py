@@ -5,7 +5,7 @@ import networkx as nx
 import time
 from network import Network
 from tqdm import tqdm
-
+import argparse
 
                 
 def shortest_path_brute(G, start_node, end_node, cost):
@@ -32,16 +32,26 @@ def shortest_path_brute(G, start_node, end_node, cost):
         return None
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Hola hello.')
+    parser.add_argument('--N', default = 15, type=int, help='Number of nodes')
+    parser.add_argument('--demands', default = 100, type=int, help='Number of demands')
+    parser.add_argument('--duration', default = 3, type=int, help='Average dyration')
+    parser.add_argument('--cost', type=int, default = 3, help='Average cost')
+    parser.add_argument('--matrix', type=str, default = None, help='Matrix file')
+    args = parser.parse_args()
     
-    network = Network(15)
+    if args.matrix:
+        network = Network(args.N, matrix = args.matrix)
+    else:
+        network = Network(args.N)
     
-    for i in tqdm(range(10)):
+    for i in tqdm(range(args.demands)):
         nodeA = random.randint(0,network.nodes-1)
         nodeB = random.randint(0,network.nodes-1)
-        cost = random.randint(1, 5)
+        cost = random.randint(args.cost - 2, args.cost + 2)
         shortest_path = shortest_path_brute(network.graph, nodeA, nodeB, cost)
         if shortest_path:
-            duration = random.randint(1, 5)
+            duration = random.randint(args.duration - 2 , args.duration + 2)
             network.accept_demand(duration, shortest_path, cost)
         else:
             # For experimentation

@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import networkx as nx
 
 class Network:
-    def __init__(self, nodes = 15):
+    def __init__(self, nodes = 15, matrix = None):
             """
             Initializes a Graph object.
 
@@ -19,14 +19,22 @@ class Network:
             - time (int): The current time.
             """
             self.nodes = nodes
-            self.adjacency_matrix = self.generate_adjacency_matrix(nodes)
+            self.experiment_id = random.randint(0, 1000) 
+
+            if matrix:
+                self.adjacency_matrix = np.load(matrix)
+                self.nodes = len(self.adjacency_matrix)
+            else:
+                self.adjacency_matrix = self.generate_adjacency_matrix(nodes)
+                self.nodes = nodes
+                np.save(f"Results/experiment_{self.experiment_id}_matrix.npy", self.adjacency_matrix)
+                
             self.graph = self.graph_from_adjacency_matrix()
             self.backup = self.graph.copy()
             self.demands = {}
             self.time = 0
             # For experimentation
             self.processed_demands = {} 
-            self.experiment_id = random.randint(0, 1000) 
         
     def generate_adjacency_matrix(self, nodes):
         """
