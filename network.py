@@ -157,7 +157,7 @@ class Network:
             for key in keys_to_delete:
                 self.release_demand(self.demands[key], key)
                 
-    def save_experiment(self):
+    def save_experiment(self, save = True):
         """
         Saves the experiment results to files.
 
@@ -168,21 +168,21 @@ class Network:
         with their corresponding time, duration, path, and cost.
         
         """
-        self.draw()
-        plt.savefig(f"Results/experiment_{self.experiment_id}.png")      
+        if save:
+            self.draw()
+            plt.savefig(f"Results/experiment_{self.experiment_id}.png")      
         
-        # Write accepted demands to a csv file
-        with open(f"Results/experiment_{self.experiment_id}_demands.csv", "w") as f:
-            f.write("Time,Duration,Path,Cost\n")
-            for time, demand in self.processed_demands.items():
-                duration, path, cost = demand
-                f.write(f"{time},{duration},{path},{cost}\n")
-            f.close()
-        self.statistics()
+            # Write accepted demands to a csv file
+            with open(f"Results/experiment_{self.experiment_id}_demands.csv", "w") as f:
+                f.write("Time,Duration,Path,Cost\n")
+                for time, demand in self.processed_demands.items():
+                    duration, path, cost = demand
+                    f.write(f"{time},{duration},{path},{cost}\n")
+                f.close()
+        self.statistics(save)
         
-        print(f"Experiment {id} saved.")
         
-    def statistics(self):
+    def statistics(self, save = True):
         costs_revenues = []
         hops = []
         rejected_demands = 0
@@ -193,21 +193,22 @@ class Network:
             else:
                 costs_revenues.append(1/len(demand[1])) 
                 hops.append(len(demand[1]))
-
-        plt.clf()
-        plt.figure(figsize=(10.6666666666, 8)) 
-        plt.plot(costs_revenues, marker='o', color='blue')
-        plt.ylabel('Cost/Revenue')
-        plt.xlabel('Demand')
-        plt.title('Cost/Revenue for each demand')
-        plt.draw()
-        plt.savefig(f"Results/experiment_{self.experiment_id}_cost_revenue.png")
         
-        # Write in a txt file all the relevant information
         acceptance_ratio = (len(self.processed_demands) - rejected_demands) / len(self.processed_demands)
+        self.acceptance_ratio = acceptance_ratio
         
-        with open(f"Results/experiment_{self.experiment_id}_statistics.txt", "w") as f:
-            f.write(f"""
+        if save:
+            plt.clf()
+            plt.figure(figsize=(10.6666666666, 8)) 
+            plt.plot(costs_revenues, marker='o', color='blue')
+            plt.ylabel('Cost/Revenue')
+            plt.xlabel('Demand')
+            plt.title('Cost/Revenue for each demand')
+            plt.draw()
+            plt.savefig(f"Results/experiment_{self.experiment_id}_cost_revenue.png")
+        
+            with open(f"Results/experiment_{self.experiment_id}_statistics.txt", "w") as f:
+                f.write(f"""
 Total number of demands: {len(self.processed_demands)}
 Number of nodes: {self.nodes}
 Number of rejected demands: {rejected_demands}
@@ -216,3 +217,7 @@ Average cost/revenue: {format(np.mean(costs_revenues), '.2f')}
 Standard deviation cost/revenue: {format(np.std(costs_revenues), '.2f')}
 Average number of hops: {format(np.mean(hops), '.2f')}
                         """)
+                f.close() 
+            print(f"Experiment {id} saved.")
+       
+        

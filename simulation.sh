@@ -1,6 +1,9 @@
 #!/bin/bash
 
-for i in {1..10}
+for i in {3..15}
 do
-   python3 graph.py --cost $i
+   for j in {3..20}
+   do
+      python3 assignment_4.py --cost $i --duration $j --demands 200 --matrix sample.npy --simulation True
+   done
 done

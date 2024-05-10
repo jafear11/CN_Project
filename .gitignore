@@ -1,3 +1,4 @@
 Results/*.png
 Results/*.txt
 Results/*.csv
+__pycache__/
