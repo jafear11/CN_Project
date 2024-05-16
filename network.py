@@ -31,6 +31,7 @@ class Network:
                 
             self.graph = self.graph_from_adjacency_matrix()
             self.backup = self.graph.copy()
+            self.pos = nx.spring_layout(self.backup)
             self.demands = {}
             self.time = 0
             # For experimentation
@@ -86,10 +87,9 @@ class Network:
         
         """
         plt.figure(figsize=(12, 12)) 
-        pos = nx.spring_layout(self.backup)
-        nx.draw(self.backup, pos, with_labels=True)
-        labels = nx.get_edge_attributes(self.backup, 'weight')
-        nx.draw_networkx_edge_labels(self.backup, pos, edge_labels=labels)
+        nx.draw(self.graph, self.pos, with_labels=True)
+        labels = nx.get_edge_attributes(self.graph, 'weight')
+        nx.draw_networkx_edge_labels(self.graph, self.pos, edge_labels=labels)
         plt.plot()
         return None
     
@@ -157,7 +157,7 @@ class Network:
             for key in keys_to_delete:
                 self.release_demand(self.demands[key], key)
                 
-    def save_experiment(self, save = True):
+    def save_experiment(self, save = False):
         """
         Saves the experiment results to files.
 
@@ -168,7 +168,7 @@ class Network:
         with their corresponding time, duration, path, and cost.
         
         """
-        if save:
+        if not save:
             self.draw()
             plt.savefig(f"Results/experiment_{self.experiment_id}.png")      
         
@@ -182,7 +182,7 @@ class Network:
         self.statistics(save)
         
         
-    def statistics(self, save = True):
+    def statistics(self, save = False):
         costs_revenues = []
         hops = []
         rejected_demands = 0
@@ -197,7 +197,7 @@ class Network:
         acceptance_ratio = (len(self.processed_demands) - rejected_demands) / len(self.processed_demands)
         self.acceptance_ratio = acceptance_ratio
         
-        if save:
+        if not save:
             plt.clf()
             plt.figure(figsize=(10.6666666666, 8)) 
             plt.plot(costs_revenues, marker='o', color='blue')
