@@ -86,7 +86,10 @@ class Network:
         Draws the graph using the spring layout algorithm and displays it.
         
         """
-        plt.figure(figsize=(12, 12)) 
+        if self.nodes > 10:
+            plt.figure(figsize=(12, 12)) 
+        else:
+            plt.figure()
         nx.draw(self.graph, self.pos, with_labels=True)
         labels = nx.get_edge_attributes(self.graph, 'weight')
         nx.draw_networkx_edge_labels(self.graph, self.pos, edge_labels=labels)
