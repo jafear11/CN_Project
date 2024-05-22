@@ -1,4 +1,6 @@
 Results/*.png
 Results/*.txt
+!Results/cost_duration_AR.png
 Results/*.csv
+!Results/simulation.csv
 __pycache__/
