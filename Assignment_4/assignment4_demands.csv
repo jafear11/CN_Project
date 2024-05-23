@@ -1,4 +1,4 @@
-NodeA,NodeB,Duration,Cost
+NodeA,NodeB,Duration,Resources
 2,3,3,5
 4,7,2,5
 7,1,5,2
