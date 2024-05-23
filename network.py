@@ -153,7 +153,7 @@ class Network:
             keys_to_delete = []
             for key in list(self.demands.keys()):
                 duration, path, resources = self.demands[key]
-                if duration >= 1:
+                if duration > 1:
                     self.demands[key] = (duration - 1, path, resources)
                 else:
                     keys_to_delete.append(key)
