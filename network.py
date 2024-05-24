@@ -6,11 +6,11 @@ import networkx as nx
 class Network:
     def __init__(self, nodes = 15, matrix = None):
             """
-            Initializes a Graph object.
+            Initializes a Network object.
 
             Parameters:
             - nodes (int): The number of nodes in the graph. Defaults to a random integer between 10 and 15.
-
+            - matrix (str): The path to a numpy file containing an adjacency matrix.
             Attributes:
             - nodes (int): The number of nodes in the graph.
             - adjacency_matrix (list): The adjacency matrix representing the graph.
@@ -34,7 +34,7 @@ class Network:
             self.pos = nx.spring_layout(self.backup)
             self.demands = {}
             self.time = 0
-            # For experimentation
+            # For experimentation, we save the processed demands in a dictionary
             self.processed_demands = {} 
         
     def generate_adjacency_matrix(self, nodes):
@@ -102,9 +102,9 @@ class Network:
         a tuple of (duration, path, resources).
 
         Args:
-            path (list): The path representing the demand.
-            resources (float): The resources associated with the demand.
-            duration (float): The duration of the demand.
+            path: The path representing the demand.
+            resources: The resources associated with the demand.
+            duration: The duration of the demand.
 
         Returns:
             None
@@ -122,12 +122,12 @@ class Network:
         
     def release_demand(self, demand, time):
         """
-        Increases the weight of edges in the graph based on the cost of a given demand, since the duration
+        Increases the weight of edges in the graph based on the resources of a given demand, since the duration
         specified for that demand has expired.
 
         Parameters:
         - demand: A tuple containing the demand information. It should have the following structure:
-                  (duration, path, cost)
+                  (duration, path, resources)
         - time: The time at which the demand was accepted.
 
         Returns:
@@ -146,7 +146,7 @@ class Network:
     def update_network(self):
             """
             Updates the network by decrementing the duration of active demands by 1.
-            If a demand's duration reaches 1, it is released from the network. Also time
+            If a demand's duration reaches 0, it is released from the network. Also time
             passed is incremented by 1.
             """
             self.time += 1
